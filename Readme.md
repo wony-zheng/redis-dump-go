@@ -36,6 +36,8 @@ Usage of ./redis-dump-go:
   -port int
         Server port (default 6379)
   -s    Silent mode (disable progress bar)
+  -keys
+        dump only special keys, comma seperated
 $ redis-dump-go > redis-backup.resp
 [==================================================] 100% [5/5]
 ```

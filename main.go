@@ -34,6 +34,7 @@ func realMain() int {
 	withTTL := flag.Bool("ttl", true, "Preserve Keys TTL")
 	output := flag.String("output", "resp", "Output type - can be resp or commands")
 	silent := flag.Bool("s", false, "Silent mode (disable progress bar)")
+	strKeys := flag.String("keys", "", "dump only special keys, comma seperated")
 	flag.Parse()
 
 	var serializer func([]string) string
@@ -70,8 +71,9 @@ func realMain() int {
 		}()
 	}
 
+	keys := strings.Split(*strKeys, ",")
 	logger := log.New(os.Stdout, "", 0)
-	if err = redisdump.DumpServer(*host, *port, redisPassword, *nWorkers, *withTTL, logger, serializer, progressNotifs); err != nil {
+	if err = redisdump.DumpServer(*host, *port, redisPassword, *nWorkers, *withTTL, logger, serializer, progressNotifs, keys); err != nil {
 		fmt.Println(err)
 		return 1
 	}

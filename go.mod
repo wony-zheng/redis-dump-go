@@ -3,6 +3,7 @@ module github.com/yannh/redis-dump-go
 go 1.12
 
 require (
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/mediocregopher/radix/v3 v3.4.2
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0 // indirect

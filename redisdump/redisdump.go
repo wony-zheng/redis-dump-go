@@ -267,7 +267,7 @@ func scanKeys(client radix.Client, keyBatches chan<- []string, progressNotificat
 }
 
 // DumpDB dumps all keys from a single Redis DB
-func DumpDB(redisURL string, nWorkers int, withTTL bool, logger *log.Logger, serializer func([]string) string, progress chan<- ProgressNotification) error {
+func DumpDB(redisURL string, nWorkers int, withTTL bool, logger *log.Logger, serializer func([]string) string, progress chan<- ProgressNotification, keys []string) error {
 	var err error
 
 	errors := make(chan error)
@@ -299,7 +299,11 @@ func DumpDB(redisURL string, nWorkers int, withTTL bool, logger *log.Logger, ser
 		go dumpKeysWorker(client, keyBatches, withTTL, logger, serializer, errors, done)
 	}
 
-	scanKeys(client, keyBatches, progress)
+	if len(keys) == 0 {
+		scanKeys(client, keyBatches, progress)
+	} else {
+		keyBatches <- keys
+	}
 	close(keyBatches)
 
 	for i := 0; i < nWorkers; i++ {
@@ -323,7 +327,7 @@ func redisURL(redisHost string, redisPort string, redisDB string, redisPassword 
 // DumpServer dumps all Keys from the redis server given by redisURL,
 // to the Logger logger. Progress notification informations
 // are regularly sent to the channel progressNotifications
-func DumpServer(redisHost string, redisPort int, redisPassword string, nWorkers int, withTTL bool, logger *log.Logger, serializer func([]string) string, progress chan<- ProgressNotification) error {
+func DumpServer(redisHost string, redisPort int, redisPassword string, nWorkers int, withTTL bool, logger *log.Logger, serializer func([]string) string, progress chan<- ProgressNotification, keys []string) error {
 	url := redisURL(redisHost, fmt.Sprint(redisPort), "", redisPassword)
 	dbs, err := getDBIndexes(url)
 	if err != nil {
@@ -332,7 +336,7 @@ func DumpServer(redisHost string, redisPort int, redisPassword string, nWorkers 
 
 	for _, db := range dbs {
 		url = redisURL(redisHost, fmt.Sprint(redisPort), fmt.Sprint(db), redisPassword)
-		if err = DumpDB(url, nWorkers, withTTL, logger, serializer, progress); err != nil {
+		if err = DumpDB(url, nWorkers, withTTL, logger, serializer, progress, keys); err != nil {
 			return err
 		}
 	}

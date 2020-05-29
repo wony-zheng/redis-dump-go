@@ -28,7 +28,7 @@ func stringToRedisCmd(k, val string) []string {
 }
 
 func hashToRedisCmd(k string, val map[string]string) []string {
-	cmd := []string{"HSET", k}
+	cmd := []string{"HMSET", k}
 	for k, v := range val {
 		cmd = append(cmd, k, v)
 	}
@@ -291,7 +291,9 @@ func DumpDB(redisURL string, nWorkers int, withTTL bool, logger *log.Logger, ser
 	if err = client.Do(radix.Cmd(nil, "SELECT", fmt.Sprint(db))); err != nil {
 		return err
 	}
-	logger.Printf(serializer([]string{"SELECT", fmt.Sprint(db)}))
+	if len(keys) == 0 {
+		logger.Printf(serializer([]string{"SELECT", fmt.Sprint(db)}))
+	}
 
 	done := make(chan bool)
 	keyBatches := make(chan []string)
